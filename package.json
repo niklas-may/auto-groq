@@ -1,0 +1,11 @@
+{
+  "name": "auto-groq",
+  "version": "0.0.1",
+  "description": "Automatically create groq queries from your sanity.io CMS schemas.",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "author": "https://github.com/niklas-may",
+  "license": "MIT"
+}
