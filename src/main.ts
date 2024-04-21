@@ -1,7 +1,7 @@
 import { format } from "groqfmt-nodejs";
 import { SchemaParser } from "./lib/schema-parser";
-import { type Documentlike } from "./types";
 import { GroqFieldHandler } from "./lib/field-handler-groq";
+import { type Documentlike } from "./types";
 
 export function generate(schema: Documentlike) {
   const fieldHandler = {groq: new GroqFieldHandler()};
@@ -10,7 +10,6 @@ export function generate(schema: Documentlike) {
 
   try {
     const res = format(`*[] {${r.groq}}`);
-    console.log(res);
   } catch (e) {
     console.log(r.groq);
     console.log(e);

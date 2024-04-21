@@ -1,6 +1,8 @@
-import { inspect } from "util";
+import {
+  AbstractFieldHandler,
+  FieldHandlerArgs,
+} from "./field-handler-interface";
 import { type Documentlike } from "./../types";
-import { AbstractFieldHandler } from "./field-handler-interface";
 
 type ParentContext = {
   type?: string;
@@ -18,50 +20,33 @@ export class SchemaParser {
     parent: ParentContext = {},
     res: Record<keyof typeof this.handler, any> = {}
   ): Record<keyof typeof this.handler, any> {
-    if (this.includesResolvable(field)) {
-      /**
-       * If this field has a child that needs its custom groq,
-       * we need to walk the object until we reach that field.
-       *
-       * The path to that child needs its explicit groq query.
-       * fore everything else, whe use the spread operator (...).
-       */
-      this.iterateHandler((h, n) => {
-        res[n] = h.onSpread({
-          parent: {
-            result: res[n],
-            length: this.getNext(field).length,
-          },
-          field: {
-            content: "",
-            name: field.name,
-            type: field.type,
-            raw: field,
-            isLastProperty: false,
-          },
-        });
+    /**
+     * If the current field has a child with a resolver,
+     * we need to walk the object until we reach that field.
+     * The path to that child needs its explicit groq query.
+     * fore everything else, whe use the spread operator (...).
+     */
+    this.iterateHandler((h, n) => {
+      res[n] = h.onSpread({
+        parent: {
+          result: res[n],
+          length: this.getNext(field).length,
+        },
+        field: {
+          content: "",
+          name: field.name,
+          type: field.type,
+          raw: field,
+          isLastProperty: false,
+        },
       });
-    } else {
+    });
+    if (!this.includesResolvable(field)) {
       /**
        * If this field has no child that needs its custom groq,
        * we can solve everything with the spread operator and
        * return the result early.
        */
-      this.iterateHandler((h, n) => {
-        res[n] = h.onSpread({
-          parent: {
-            result: res[n],
-            length: this.getNext(field).length,
-          },
-          field: {
-            content: "",
-            name: field.name,
-            type: field.type,
-            raw: field,
-            isLastProperty: false,
-          },
-        });
-      });
       return res;
     }
 
@@ -96,8 +81,8 @@ export class SchemaParser {
         } else {
           if (this.isResolvable(field) || this.includesResolvable(field)) {
             /**
-             * We only need to continue if this field is resolvable or
-             * of any of its children are.
+             * We only need to continue if this field has a resolver
+             * or if any of its children have a resolver.
              */
             const compilerArgs = {
               name: field.name,
@@ -106,9 +91,9 @@ export class SchemaParser {
             };
             if (field.type === "array") {
               /**
-               * Handle array fields differently. Technically the following
-               * else could alwo handle this case, but we do not need to worry
-               * about this because sanity does not allow to nest arrays.
+               * Handle array. Technically the following else could also
+               * handle this case, but we do not need to worry about this
+               * because sanity does not allow to nest arrays.
                */
               this.iterateHandler((h, n) => {
                 result[n] = h.onArray({
@@ -129,7 +114,7 @@ export class SchemaParser {
             } else {
               if (parent.type === "array") {
                 /**
-                 * If an object is in an array, does not need its enclosing
+                 * If an object is in an array, it does not need its enclosing
                  * brackets. We can just return the object properties.
                  */
                 this.iterateHandler((h, n) => {
@@ -149,7 +134,7 @@ export class SchemaParser {
                 });
               } else {
                 /**
-                 * Finally we handle norma objects.
+                 * Finally we handle normal objects.
                  */
                 this.iterateHandler((h, n) => {
                   result[n] = h.onObject({
@@ -213,8 +198,4 @@ export class SchemaParser {
       callback(handler, name);
     }
   }
-}
-
-function log(args: any) {
-  console.log(inspect(args, false, null, true));
 }
