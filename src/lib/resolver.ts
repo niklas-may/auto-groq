@@ -1,9 +1,10 @@
 import _ from "lodash";
 import { Documentlike } from "../types";
+import { Config } from "./config";
 
 /**
  * @description A valid groq statement either containing of a left and a right side
- * (leftSide { rightSide}) or just aright side. The string can contain the schema field 
+ * (leftSide { rightSide}) or just aright side. The string can contain the schema field
  * name as a template variable in the mustache syntax: Eg. "{{name}}".
  *
  * When the statement has only a right side, the shema field name will be used for the
@@ -31,40 +32,75 @@ type TemplateVariables = {
   name: string;
 };
 
+export class ResolverService {
+  private resolver = new Map<string, ResolverCompiler>();
+
+  constructor(resolver: Config["resolvers"]) {
+    Object.entries(resolver ?? {}).forEach(([key, val]) => {
+      this.resolver.set(key, new ResolverCompiler(val));
+    });
+  }
+
+  get(name: string, resolver?: Resolver): ResolverCompiler | undefined {
+    let res;
+    if (resolver) {
+      res = new ResolverCompiler(resolver);
+    } else {
+      res = this.resolver.get(name);
+    }
+    return res;
+  }
+
+  set(name: string, resolver: Resolver) {
+    return this.resolver.set(name, new ResolverCompiler(resolver));
+  }
+}
+
 export class ResolverCompiler {
-  private groq = "";
+  private template = "";
+  isObject: boolean;
+  isAnonymouseObject: boolean;
+  isRenamed: boolean
 
-  constructor(private readonly field: Documentlike, resolver?: Resolver) {
-    const template = this.getTemplate(resolver);
-    const groqRaw = this.compileTemplate(template, { name: this.field.name });
-    this.groq = this.trim(groqRaw);
+  constructor(resolver: Resolver) {
+    this.template = this.getTemplate(resolver);
+    const groqRaw = this.compileTemplate(this.template, { name: "test" });
+    const groq = this.trim(groqRaw);
+    this.isObject = this.checkIsObject(groq);
+    this.isAnonymouseObject = this.checkAnonymouseObject(groq);
+    this.isRenamed = this.checkIsRenamed(groq)
   }
 
-  get() {
-    return this.isAnonymouseObject()
-      ? `${this.field.name} ${this.groq}`
-      : this.groq;
+  get(name: string) {
+    const groqRaw = this.compileTemplate(this.template, { name });
+    const groq = this.trim(groqRaw);
+    return this.isAnonymouseObject ? `${name} ${groq}` : groq;
   }
 
-  getUnwrapped() {
-    if(this.isObject()) {
-      const [start, end]= [this.groq.indexOf("{"), this.groq.lastIndexOf("}")];
-      return this.trim(this.groq.substring(start + 1, end));
+  getUnwrapped(name: string) {
+    const groqRaw = this.compileTemplate(this.template, { name });
+    const groq = this.trim(groqRaw);
+    if (this.isObject) {
+      const [start, end] = [groq.indexOf("{"), groq.lastIndexOf("}")];
+      return this.trim(groq.substring(start + 1, end));
     } else {
       throw new Error("The field is not an object");
     }
   }
 
-  isAnonymouseObject() {
-    return this.groq.startsWith("{") && this.groq.endsWith("}");
+  private checkIsRenamed(groq: string) {
+    return groq.startsWith('"')
   }
 
-  isObject() {
-    return this.groq.endsWith("}");
+  private checkAnonymouseObject(groq: string) {
+    return groq.startsWith("{") && groq.endsWith("}");
   }
 
-  private getTemplate(rOverride?: Resolver) {
-    const resolver = rOverride ?? this.field.resolver;
+  private checkIsObject(groq: string) {
+    return groq.endsWith("}");
+  }
+
+  private getTemplate(resolver: Resolver) {
     const name = typeof resolver === "object" ? resolver?.rename : "";
     const groq = typeof resolver === "object" ? resolver.selector : resolver;
 
@@ -81,13 +117,9 @@ export class ResolverCompiler {
 
   private trim(str: string) {
     // https://sanity-io.github.io/GROQ/draft/#sec-White-Space
-    const whiteSpacePattern =
-      /^[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+|[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+$/g;
+    const whiteSpacePattern = /^[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+|[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+$/g;
     const comaPattern = /,$/;
 
-    return str
-      .replace(whiteSpacePattern, "")
-      .replace(comaPattern, "")
-      .replace(whiteSpacePattern, "");
+    return str.replace(whiteSpacePattern, "").replace(comaPattern, "").replace(whiteSpacePattern, "");
   }
 }

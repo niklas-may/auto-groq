@@ -9,8 +9,8 @@ describe("Basic resolver handing", () => {
       type: "custom",
       resolver: "{{name}}",
     };
-    const compiler = new ResolverCompiler(field);
-    const groq = compiler.get();
+    const compiler = new ResolverCompiler(field.resolver);
+    const groq = compiler.get(field.name);
     expect(groq).toBe("test");
   });
 
@@ -20,21 +20,11 @@ describe("Basic resolver handing", () => {
       type: "custom",
       resolver: () => "{{name}}",
     };
-    const compiler = new ResolverCompiler(field);
-    const groq = compiler.get();
+    const compiler = new ResolverCompiler(field.resolver);
+    const groq = compiler.get(field.name);
     expect(groq).toBe("test");
   });
 
-  it("Should allow to override resolver", () => {
-    const field: Documentlike = {
-      name: "test",
-      type: "custom",
-      resolver: () => "{{name}}",
-    };
-    const compiler = new ResolverCompiler(field, "override");
-    const groq = compiler.get();
-    expect(groq).toBe("override");
-  });
 });
 
 describe("Modify groq string", () => {
@@ -55,13 +45,7 @@ describe("Modify groq string", () => {
           fieldName
         } ,
       `,
-    ].map((groq) =>
-      new ResolverCompiler({
-        name: "test",
-        type: "custom",
-        resolver: groq,
-      }).isAnonymouseObject()
-    );
+    ].map((groq) => new ResolverCompiler(groq).isAnonymouseObject);
     expect(queries.some((query) => query)).toBe(!false);
   });
 
@@ -71,8 +55,8 @@ describe("Modify groq string", () => {
       type: "custom",
       resolver: () => "{ _id, name }",
     };
-    const compiler = new ResolverCompiler(field);
-    const groq = compiler.get();
+    const compiler = new ResolverCompiler(field.resolver);
+    const groq = compiler.get(field.name);
     expect(groq).toBe("test { _id, name }");
   });
 
@@ -82,9 +66,8 @@ describe("Modify groq string", () => {
       type: "custom",
       resolver: () => "test { _id, name }",
     };
-    const compiler = new ResolverCompiler(field);
-    const groq = compiler.getUnwrapped();
-    console.log(groq);
+    const compiler = new ResolverCompiler(field.resolver);
+    const groq = compiler.getUnwrapped(field.name);
     expect(groq).toBe("_id, name");
   });
 });
