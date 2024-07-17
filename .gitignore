@@ -1,7 +1,7 @@
 node_modules
 .autogroq
 playground
-.DS_Stroe
+.DS_Store
 dist
 .eslintcache
 coverage
