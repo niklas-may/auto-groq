@@ -19,7 +19,7 @@
     "build": "unbuild",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags"
   },
-  "packageManager": "^pnpm@8.15.4",
+  "packageManager": "pnpm@8.15.4",
   "author": "https://github.com/niklas-may",
   "license": "MIT",
   "devDependencies": {
