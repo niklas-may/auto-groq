@@ -21,7 +21,7 @@ export type Options<T extends UserOptions = UserOptions> = {
   [P in keyof T]-?: T[P];  
 }
 
-export type CreateConfigReturn<T extends Record<string, any>> = { config: Config<T>; options?: Options };
+export type CreateConfigReturn<T extends Record<string, any>> = { config: Config<T>; options?: UserOptions };
 
 export const defaultOptions: Options = {
   outPath: "./.autogroq",

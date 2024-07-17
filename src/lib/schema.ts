@@ -1,6 +1,5 @@
 import type { Documentlike } from "./../types";
 import type { FieldVisitor, FieldMeta } from "./field";
-import { sanitySchemaTypes } from "./constants";
 import { ResolverService } from "./resolver";
 
 export type SchemaContext = {
@@ -9,7 +8,6 @@ export type SchemaContext = {
 
 export class Schema {
   visitor: FieldVisitor[];
-  private sanityTypes = sanitySchemaTypes;
 
   constructor(
     readonly context: SchemaContext,

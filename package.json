@@ -2,25 +2,40 @@
   "name": "auto-groq",
   "version": "0.0.1",
   "description": "Automatically create groq queries from your sanity.io CMS schemas.",
-  "main": "index.js",
-  "scripts": {
-    "test": "vitest"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/app.mjs",
+      "require": "./dist/app.cjs"
+    }
   },
+  "main": "./dist/app.cjs",
+  "types": "./dist/app.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "build": "unbuild"
+  },
+  "packageManager": "^pnpm@8.15.4",
   "author": "https://github.com/niklas-may",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.12.7",
-    "eslint": "^9.0.0",
-    "eslint-config-unjs": "^0.2.1",
-    "sanity": "^3.50.0",
-    "typescript": "^5.4.5",
-    "vitest": "^1.5.0"
+    "@types/lodash": "^4.17.7",
+    "@types/node": "^20.14.11",
+    "changelogen": "^0.5.5",
+    "eslint": "^8.57.0",
+    "eslint-config-unjs": "^0.3.2",
+    "typescript": "^5.5.3",
+    "unbuild": "^2.0.0",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "defu": "^6.1.4",
     "glob": "^11.0.0",
     "groqfmt-nodejs": "^1.0.0",
     "lodash": "^4.17.21",
-    "prettier": "^3.3.2"
+    "prettier": "^3.3.3"
   }
 }

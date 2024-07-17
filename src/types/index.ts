@@ -1,11 +1,6 @@
-import type { IntrinsicDefinitions } from "sanity";
-
-
-export type SanitySchemaTypes = keyof IntrinsicDefinitions;
-
 export type Documentlike = {
   name: string;
-  type: SanitySchemaTypes[number] | string;
+  type: string;
   resolver?: boolean | any;
   of?: Documentlike[];
   fields?: Documentlike[];
@@ -36,6 +31,5 @@ type GroqObject = {
 };
 
 export type Resolver = GroqExpression | GroqObject;
-
 
 export type StringLike = ((...args: any) => string) | string;
