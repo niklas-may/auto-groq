@@ -1,6 +1,6 @@
 {
   "name": "autogroq",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Automatically create groq queries from your sanity.io CMS schemas.",
   "type": "module",
   "exports": {
@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "build": "unbuild",
     "lint": "eslint --cache --fix . && prettier -c src",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags"
