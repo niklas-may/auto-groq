@@ -1,8 +1,9 @@
-import path from "path";
+import path from "node:path";
 import * as prettier from "prettier";
 import { glob } from "glob";
-import { existsSync, promises, mkdirSync } from "fs";
+import { existsSync, promises, mkdirSync } from "node:fs";
 import { Options } from "./config";
+import { kebabCase } from "lodash";
 
 interface IFilePath {
   extension: string;
@@ -26,12 +27,20 @@ export class File implements IFilePath {
     this.path = config.path;
   }
 
+  get fileName() {
+    return File.createFileName(this);
+  }
+
   get fullPath() {
     return File.createFullPath(this);
   }
 
+  static createFileName(file: IFilePath) {
+    return `${kebabCase(file.name)}.${file.extension}`;
+  }
+
   static createFullPath(file: IFilePath) {
-    return path.resolve(path.join(file.path, `${file.name}.${file.extension}`));
+    return path.resolve(path.join(file.path, File.createFileName(file)));
   }
 
   async checkIsDirty() {
@@ -74,7 +83,7 @@ export class FileService {
 
   async flush() {
     await Promise.all(
-      Array.from(this.store).map(([_, f]) => {
+      [...this.store].map(([_, f]) => {
         const file = this.interceptor.reduce((acc, interceptor) => interceptor(acc), f);
         return this.writeFile(file);
       }),
@@ -93,9 +102,9 @@ export class FileService {
     const files: string[] = [];
 
     const currentFiles = await glob(`${path.resolve(this.options.outPath)}/**/*`, { stat: true, withFileTypes: true });
-    currentFiles.forEach((f) => {
+    for (const f of currentFiles) {
       f.isDirectory() ? dirs.push(f.fullpath()) : files.push(f.fullpath());
-    });
+    }
 
     for (const f of files) {
       if (!this.store.get(f)) {
@@ -104,7 +113,7 @@ export class FileService {
     }
 
     for (const d of dirs) {
-      const exists = Array.from(this.store).some(([_, v]) => v.fullPath.startsWith(d));
+      const exists = [...this.store].some(([_, v]) => v.fullPath.startsWith(d));
       if (!exists) {
         await promises.rmdir(d);
       }
@@ -112,11 +121,11 @@ export class FileService {
   }
 
   private cleanupFlush() {
-    this.store.forEach((f) => {
+    for (const [_, f] of this.store) {
       if (!this.touchedFiles.has(f.fullPath)) {
         this.deleteFile(f.fullPath);
       }
-    });
+    }
     this.touchedFiles.clear();
   }
 

@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import defu from "defu";
 import { type Config, defaultOptions, Options, UserOptions } from "./lib/config";
 import { FileService } from "./lib/file";
@@ -44,17 +44,17 @@ export class App {
     await this.fileService.flush();
 
     let updateCount = 0;
-    this.fileService.store.forEach((x) => {
+    for (const x of this.fileService.store) {
       if (x.dirty) {
         updateCount++;
       }
-    });
+    }
 
     console.log(`Processed ${this.fileService.store.size} files, updated ${updateCount}`);
   }
 
   private processQueries() {
-    Object.entries(this.queries).forEach(([key, baseQuery]) => {
+    for (const [key, baseQuery] of Object.entries(this.queries)) {
       const query = this.queryTransformer.reduce((query, handler) => handler(key, query, { fileService: this.fileService }), baseQuery);
 
       const file = this.fileService.getOrCreate({
@@ -64,11 +64,11 @@ export class App {
       });
 
       file.content = query;
-    });
+    }
   }
 
   private generateQueries() {
-    Object.entries(this.config.schemas).forEach(([key, val]) => {
+    for (const [key, val] of Object.entries(this.config.schemas)) {
       const schemaContext: SchemaContext = {
         resolverService: this.resolverService,
       };
@@ -76,14 +76,14 @@ export class App {
       const schema = new Schema(schemaContext, val, visitor);
 
       const queryContext: Record<string, any> = {};
-      schema.visitor.forEach((v) => {
+      for (const v of schema.visitor) {
         queryContext[v.id] = v.result;
-      });
+      }
       this.queryContext[key] = queryContext as SchemaVisitorResult;
-    });
+    }
 
-    Object.entries(this.config.queries).forEach(([name, func]) => {
+    for (const [name, func] of Object.entries(this.config.queries)) {
       this.queries[name] = func(this.queryContext);
-    });
+    }
   }
 }

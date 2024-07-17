@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { Documentlike } from "../types";
 import { Config } from "./config";
 
 /**
@@ -36,18 +35,13 @@ export class ResolverService {
   private resolver = new Map<string, ResolverCompiler>();
 
   constructor(resolver: Config["resolvers"]) {
-    Object.entries(resolver ?? {}).forEach(([key, val]) => {
+    for (const [key, val] of Object.entries(resolver ?? {})) {
       this.resolver.set(key, new ResolverCompiler(val));
-    });
+    }
   }
 
   get(name: string, resolver?: Resolver): ResolverCompiler | undefined {
-    let res;
-    if (resolver) {
-      res = new ResolverCompiler(resolver);
-    } else {
-      res = this.resolver.get(name);
-    }
+    const res = resolver ? new ResolverCompiler(resolver) : this.resolver.get(name);
     return res;
   }
 
@@ -60,7 +54,7 @@ export class ResolverCompiler {
   private template = "";
   isObject: boolean;
   isAnonymouseObject: boolean;
-  isRenamed: boolean
+  isRenamed: boolean;
 
   constructor(resolver: Resolver) {
     this.template = this.getTemplate(resolver);
@@ -68,7 +62,7 @@ export class ResolverCompiler {
     const groq = this.trim(groqRaw);
     this.isObject = this.checkIsObject(groq);
     this.isAnonymouseObject = this.checkAnonymouseObject(groq);
-    this.isRenamed = this.checkIsRenamed(groq)
+    this.isRenamed = this.checkIsRenamed(groq);
   }
 
   get(name: string) {
@@ -89,7 +83,7 @@ export class ResolverCompiler {
   }
 
   private checkIsRenamed(groq: string) {
-    return groq.startsWith('"')
+    return groq.startsWith('"');
   }
 
   private checkAnonymouseObject(groq: string) {
@@ -111,13 +105,14 @@ export class ResolverCompiler {
   }
 
   private compileTemplate(template: string, data: TemplateVariables) {
-    _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
+    _.templateSettings.interpolate = /{{([\S\s]+?)}}/g;
     return _.template(template)(data);
   }
 
   private trim(str: string) {
     // https://sanity-io.github.io/GROQ/draft/#sec-White-Space
-    const whiteSpacePattern = /^[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+|[\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0]+$/g;
+    // eslint-disable-next-line no-control-regex
+    const whiteSpacePattern = /^[\u0009-\u000D \u0085\u00A0]+|[\u0009-\u000D \u0085\u00A0]+$/g;
     const comaPattern = /,$/;
 
     return str.replace(whiteSpacePattern, "").replace(comaPattern, "").replace(whiteSpacePattern, "");

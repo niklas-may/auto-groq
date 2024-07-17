@@ -1,7 +1,7 @@
-import { describe, expect, it, afterEach, afterAll, beforeAll } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 import { Options } from "../src/lib/config";
 import { FileService } from "../src/lib/file";
-import { existsSync, promises, rmdir, rmSync, unlink } from "node:fs";
+import { existsSync, promises, rmSync } from "node:fs";
 import path from "node:path";
 import { glob } from "glob";
 
@@ -59,7 +59,7 @@ describe("[FileService]", () => {
 
     await promises.mkdir(options.outPath, { recursive: true });
     await promises.mkdir(path.join(options.outPath, "externalFolder"), { recursive: true });
-    await promises.writeFile(path.join(options.outPath, "external.ts"), "// external", { encoding: "utf-8" });
+    await promises.writeFile(path.join(options.outPath, "external.ts"), "// external", { encoding: "utf8" });
     const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
 
     file.content = "// Test file";

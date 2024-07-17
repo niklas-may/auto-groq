@@ -46,7 +46,7 @@ describe("Modify groq string", () => {
         } ,
       `,
     ].map((groq) => new ResolverCompiler(groq).isAnonymouseObject);
-    expect(queries.some((query) => query)).toBe(!false);
+    expect(queries.some(Boolean)).toBe(!false);
   });
 
   it("Should add name to anonymous object", () => {

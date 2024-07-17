@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "vitest";
 import { App } from "../src/app";
 import { createConfig } from "../src/lib/config";
 
