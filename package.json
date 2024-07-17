@@ -1,5 +1,5 @@
 {
-  "name": "auto-groq",
+  "name": "autogroq",
   "version": "0.0.1",
   "description": "Automatically create groq queries from your sanity.io CMS schemas.",
   "type": "module",
