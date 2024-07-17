@@ -43,8 +43,8 @@ export class App {
     await this.fileService.flush();
 
     let updateCount = 0;
-    for (const x of this.fileService.store) {
-      if (x.dirty) {
+    for (const [_, f] of this.fileService.store) {
+      if (f.dirty) {
         updateCount++;
       }
     }
