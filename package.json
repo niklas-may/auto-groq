@@ -16,7 +16,8 @@
   ],
   "scripts": {
     "test": "vitest",
-    "build": "unbuild"
+    "build": "unbuild",
+    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags"
   },
   "packageManager": "^pnpm@8.15.4",
   "author": "https://github.com/niklas-may",
@@ -24,7 +25,6 @@
   "devDependencies": {
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.14.11",
-    "changelogen": "^0.5.5",
     "eslint": "^8.57.0",
     "eslint-config-unjs": "^0.3.2",
     "typescript": "^5.5.3",
