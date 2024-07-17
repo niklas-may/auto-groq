@@ -31,7 +31,6 @@ export class App {
     this.options = defu(options, defaultOptions);
     this.fileService = new FileService(this.options);
     this.resolverService = new ResolverService(config.resolvers);
-
   }
 
   setConfig(config: Config) {

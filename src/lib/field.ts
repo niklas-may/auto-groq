@@ -31,9 +31,9 @@ export class SchemaProjection implements FieldVisitor {
     const { field, parentField, children, meta, result } = args;
     const { includesResolvable, isResolvable } = meta;
 
-    const isInArray = parentField?.type ==="array"
-    const isInArrayWithSiblings = (parentField?.of?.length ?? 1) > 1
-    const isConditonal = isInArray && isInArrayWithSiblings
+    const isInArray = parentField?.type === "array";
+    const isInArrayWithSiblings = (parentField?.of?.length ?? 1) > 1;
+    const isConditonal = isInArray && isInArrayWithSiblings;
 
     if (!includesResolvable) return (this.result = result);
 
@@ -43,7 +43,8 @@ export class SchemaProjection implements FieldVisitor {
       if (!res) {
         throw new Error(`Resolver not found`, { cause: `field name: ${field.name}, field type: ${field.type}` });
       }
-      const resolver = isConditonal && (parentField.of?.length ?? 0) >= 1 && (res.isObject && !res.isRenamed)  ? res.getUnwrapped(field.name) : res.get(field.name);
+      const resolver =
+        isConditonal && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed ? res.getUnwrapped(field.name) : res.get(field.name);
       const groq = isConditonal ? this.buildConditionalObject(field.name, resolver) : resolver;
       return (this.result = this.concat(args, groq));
     }

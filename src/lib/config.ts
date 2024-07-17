@@ -18,8 +18,8 @@ export type UserOptions = {
 };
 
 export type Options<T extends UserOptions = UserOptions> = {
-  [P in keyof T]-?: T[P];  
-}
+  [P in keyof T]-?: T[P];
+};
 
 export type CreateConfigReturn<T extends Record<string, any>> = { config: Config<T>; options?: UserOptions };
 

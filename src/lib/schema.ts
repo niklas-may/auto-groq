@@ -29,13 +29,10 @@ export class Schema {
     //   return next;
     // }
 
-    
     const nextFields = this.getNext(field);
     const children = (nextFields as any[]).reduce((result, nextField) => {
       return this.traverse(nextField, result, field);
     }, []);
-
-
 
     const nextResult = this.visitField({
       field,
