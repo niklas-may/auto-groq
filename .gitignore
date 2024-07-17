@@ -4,3 +4,4 @@ playground
 .DS_Stroe
 dist
 .eslintcache
+coverage
