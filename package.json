@@ -3,6 +3,9 @@
   "version": "0.0.2",
   "description": "Automatically create groq queries from your sanity.io CMS schemas.",
   "type": "module",
+  "repository": {
+    "url": "https://github.com/niklas-may/autogroq"
+  },
   "exports": {
     ".": {
       "import": "./dist/app.mjs",
