@@ -30,15 +30,15 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/app.mjs",
-      "require": "./dist/app.cjs"
+      "import": "./dist/main.mjs",
+      "require": "./dist/main.cjs"
     }
   },
   "files": [
     "dist"
   ],
   "license": "MIT",
-  "main": "./dist/app.cjs",
+  "main": "./dist/main.cjs",
   "name": "autogroq",
   "packageManager": "pnpm@9.5.0",
   "pre-commit": [
@@ -58,6 +58,6 @@
     "test:watch": "vitest"
   },
   "type": "module",
-  "types": "./dist/app.d.ts",
+  "types": "./dist/main.d.ts",
   "version": "0.0.2"
 }
