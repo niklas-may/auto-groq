@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import path from "node:path";
 import { defineCommand, runMain } from "citty";
 import { loadConfig } from "c12";
