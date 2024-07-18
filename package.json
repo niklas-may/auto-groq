@@ -42,6 +42,7 @@
   "name": "autogroq",
   "packageManager": "pnpm@9.5.0",
   "pre-commit": [
+    "precommit",
     "lint"
   ],
   "repository": {
@@ -51,6 +52,7 @@
     "build": "unbuild",
     "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
     "lint": "eslint --cache --fix . && prettier -c src",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
     "test": "vitest run",
     "test:watch": "vitest"
