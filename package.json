@@ -28,8 +28,7 @@
     "lint": "eslint --cache --fix . && prettier -c src",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "prepare": "husky install"
+    "test:watch": "vitest"
   },
   "packageManager": "pnpm@9.5.0",
   "dependencies": {
