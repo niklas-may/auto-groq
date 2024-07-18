@@ -26,7 +26,6 @@ const generate = defineCommand({
     const c = await loadConfig({
       name: "autogroq",
       cwd: configPath,
-      jitiOptions: { debug: true },
     });
 
     const app = new App(c.config.config, c.config.options);

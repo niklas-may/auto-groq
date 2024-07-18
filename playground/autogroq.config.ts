@@ -3,6 +3,7 @@ import { projectSchema } from "./schema/project-schema";
 import { blockTextResolver } from "./schema/block-text-resolver";
 import { imageResolver } from "./schema/image-resolver";
 import { linkResolver } from "./schema/link-resolver";
+import { mediaResolver } from "./schema/media-resolver";
 
 export default createConfig(
   {
@@ -13,6 +14,7 @@ export default createConfig(
       blockText: blockTextResolver,
       image: imageResolver,
       link: linkResolver,
+      media: mediaResolver
     },
     queries: {
       getProjectById: (schemas) => `
