@@ -1,47 +1,7 @@
 {
-  "name": "autogroq",
-  "version": "0.0.2",
-  "description": "Automatically create groq queries from your sanity.io CMS schemas.",
-  "repository": {
-    "url": "https://github.com/niklas-may/autogroq"
-  },
-  "type": "module",
+  "author": "https://github.com/niklas-may",
   "bin": {
     "autogroq": "./dist/cli.cjs"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/app.mjs",
-      "require": "./dist/app.cjs"
-    }
-  },
-  "main": "./dist/app.cjs",
-  "types": "./dist/app.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "unbuild",
-    "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
-    "lint": "eslint --cache --fix . && prettier -c src",
-    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
-    "test:watch": "vitest",
-    "test": "vitest run"
-  },
-  "packageManager": "pnpm@9.5.0",
-  "author": "https://github.com/niklas-may",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/lodash": "^4.17.7",
-    "@types/node": "^20.14.11",
-    "@vitest/coverage-v8": "^2.0.3",
-    "changelogen": "^0.5.5",
-    "eslint": "^9.7.0",
-    "eslint-config-unjs": "^0.3.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.3",
-    "unbuild": "^2.0.0",
-    "vitest": "^2.0.3"
   },
   "dependencies": {
     "c12": "^1.11.1",
@@ -53,5 +13,49 @@
     "jiti": "^1.21.6",
     "lodash": "^4.17.21",
     "prettier": "^3.3.3"
-  }
+  },
+  "description": "Automatically create groq queries from your sanity.io CMS schemas.",
+  "devDependencies": {
+    "@types/lodash": "^4.17.7",
+    "@types/node": "^20.14.11",
+    "@vitest/coverage-v8": "^2.0.3",
+    "changelogen": "^0.5.5",
+    "eslint": "^9.7.0",
+    "eslint-config-unjs": "^0.3.2",
+    "pre-commit": "^1.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
+    "unbuild": "^2.0.0",
+    "vitest": "^2.0.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/app.mjs",
+      "require": "./dist/app.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "main": "./dist/app.cjs",
+  "name": "autogroq",
+  "packageManager": "pnpm@9.5.0",
+  "pre-commit": [
+    "lint"
+  ],
+  "repository": {
+    "url": "https://github.com/niklas-may/autogroq"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
+    "lint": "eslint --cache --fix . && prettier -c src",
+    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "type": "module",
+  "types": "./dist/app.d.ts",
+  "version": "0.0.2"
 }

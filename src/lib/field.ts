@@ -45,7 +45,7 @@ export class SchemaProjection implements FieldVisitor {
         consola.error(`Resolver not found`, { field });
         return (this.result = result);
       }
-      
+
       const resolver =
         isConditonal && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed ? res.getUnwrapped(field.name) : res.get(field.name);
       const groq = isConditonal ? this.buildConditionalObject(field.name, resolver) : resolver;

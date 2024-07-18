@@ -48,13 +48,11 @@ export class App {
     this.processQueries();
     await this.fileService.flush();
 
-    consola.info(
-      `Processed ${this.fileService.store.size} ${this.fileService.store.size > 1 ? "files" : "file"}, updated ${this.fileService.filesWriten}.`,
-    );
+    consola.info(`Processed ${this.fileService.store.size} ${this.fileService.store.size > 1 ? "files" : "file"}, updated ${this.fileService.filesWriten}.`);
 
     const et = performance.now();
     const t = Math.round(et - st);
-    consola.success(`Finished in ${t}ms.`)
+    consola.success(`Finished in ${t}ms.`);
   }
 
   private processQueries() {

@@ -3,7 +3,7 @@ import * as prettier from "prettier";
 import { glob } from "glob";
 import { existsSync, promises, mkdirSync } from "node:fs";
 import { Options } from "./config";
-import kebabCase  from "lodash/kebabCase";
+import kebabCase from "lodash/kebabCase";
 
 interface IFilePath {
   extension: string;
@@ -97,7 +97,6 @@ export class FileService {
       await this.cleanup();
       this.flushed = true;
     }
-
   }
 
   private async cleanup() {
@@ -143,7 +142,7 @@ export class FileService {
     const isDirty = await file.checkIsDirty();
     if (!isDirty) return;
 
-    this.filesWriten++
+    this.filesWriten++;
 
     return await promises.writeFile(file.fullPath, file.content);
   }
