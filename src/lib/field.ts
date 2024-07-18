@@ -1,3 +1,4 @@
+import consola from "consola";
 import type { Documentlike, StringLike } from "./../types";
 import type { SchemaContext } from "./schema";
 export interface FieldMeta {
@@ -41,8 +42,10 @@ export class SchemaProjection implements FieldVisitor {
       const res = this.context.resolverService.get(field.type, field.resolver);
 
       if (!res) {
-        throw new Error(`Resolver not found`, { cause: `field name: ${field.name}, field type: ${field.type}` });
+        consola.error(`Resolver not found`, { field });
+        return (this.result = result);
       }
+      
       const resolver =
         isConditonal && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed ? res.getUnwrapped(field.name) : res.get(field.name);
       const groq = isConditonal ? this.buildConditionalObject(field.name, resolver) : resolver;

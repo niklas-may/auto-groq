@@ -2,9 +2,12 @@
   "name": "autogroq",
   "version": "0.0.2",
   "description": "Automatically create groq queries from your sanity.io CMS schemas.",
-  "type": "module",
   "repository": {
     "url": "https://github.com/niklas-may/autogroq"
+  },
+  "type": "module",
+  "bin": {
+    "autogroq": "./dist/cli.cjs"
   },
   "exports": {
     ".": {
@@ -18,10 +21,12 @@
     "dist"
   ],
   "scripts": {
-    "test": "vitest run",
     "build": "unbuild",
+    "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
     "lint": "eslint --cache --fix . && prettier -c src",
-    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags"
+    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
+    "test:watch": "vitest",
+    "test": "vitest run"
   },
   "packageManager": "pnpm@9.5.0",
   "author": "https://github.com/niklas-may",
@@ -33,14 +38,19 @@
     "changelogen": "^0.5.5",
     "eslint": "^9.7.0",
     "eslint-config-unjs": "^0.3.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "unbuild": "^2.0.0",
     "vitest": "^2.0.3"
   },
   "dependencies": {
+    "c12": "^1.11.1",
+    "citty": "^0.1.6",
+    "consola": "^3.2.3",
     "defu": "^6.1.4",
     "glob": "^11.0.0",
     "groqfmt-nodejs": "^1.0.0",
+    "jiti": "^1.21.6",
     "lodash": "^4.17.21",
     "prettier": "^3.3.3"
   }

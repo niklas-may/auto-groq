@@ -1,6 +1,5 @@
 node_modules
 .autogroq
-playground
 .DS_Store
 dist
 .eslintcache

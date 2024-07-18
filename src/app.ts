@@ -7,6 +7,7 @@ import { SchemaProjection } from "./lib/field";
 import { StringLike } from "./types";
 import { QueryTransformer, transformPartials } from "./lib/query";
 import { ResolverService } from "./lib/resolver";
+import consola from "consola";
 
 export interface SchemaVisitorResult {
   projection: StringLike;
@@ -38,18 +39,22 @@ export class App {
   }
 
   async run() {
+    const st = performance.now();
+    const queryCount = Object.entries(this.config.queries).length;
+    const queryName = queryCount > 1 ? "queries" : "query";
+    consola.start(`Found ${queryCount} ${queryName} in config.`);
+
     this.generateQueries();
     this.processQueries();
     await this.fileService.flush();
 
-    let updateCount = 0;
-    for (const [_, f] of this.fileService.store) {
-      if (f.dirty) {
-        updateCount++;
-      }
-    }
+    consola.info(
+      `Processed ${this.fileService.store.size} ${this.fileService.store.size > 1 ? "files" : "file"}, updated ${this.fileService.filesWriten}.`,
+    );
 
-    console.log(`Processed ${this.fileService.store.size} files, updated ${updateCount}`);
+    const et = performance.now();
+    const t = Math.round(et - st);
+    consola.success(`Finished in ${t}ms.`)
   }
 
   private processQueries() {

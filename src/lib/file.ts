@@ -3,7 +3,7 @@ import * as prettier from "prettier";
 import { glob } from "glob";
 import { existsSync, promises, mkdirSync } from "node:fs";
 import { Options } from "./config";
-import { kebabCase } from "lodash";
+import kebabCase  from "lodash/kebabCase";
 
 interface IFilePath {
   extension: string;
@@ -65,6 +65,7 @@ export class FileService {
   store: Map<string, File> = new Map();
   interceptor: Array<(f: File) => File> = [];
 
+  filesWriten = 0;
   touchedFiles = new Set<string>();
   private flushed = false;
 
@@ -82,6 +83,7 @@ export class FileService {
   }
 
   async flush() {
+    this.filesWriten = 0;
     await Promise.all(
       [...this.store].map(([_, f]) => {
         const file = this.interceptor.reduce((acc, interceptor) => interceptor(acc), f);
@@ -95,6 +97,7 @@ export class FileService {
       await this.cleanup();
       this.flushed = true;
     }
+
   }
 
   private async cleanup() {
@@ -139,6 +142,8 @@ export class FileService {
     file.content = await prettier.format(file.content, { parser: "babel-ts" });
     const isDirty = await file.checkIsDirty();
     if (!isDirty) return;
+
+    this.filesWriten++
 
     return await promises.writeFile(file.fullPath, file.content);
   }
