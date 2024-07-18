@@ -1,8 +1,37 @@
 {
+  "name": "autogroq",
+  "version": "0.0.2",
+  "description": "Automatically create groq queries from your sanity.io CMS schemas.",
   "author": "https://github.com/niklas-may",
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/niklas-may/autogroq"
+  },
+  "type": "module",
+  "main": "./dist/main.cjs",
+  "exports": {
+    ".": {
+      "import": "./dist/main.mjs",
+      "require": "./dist/main.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "types": "./dist/main.d.ts",
   "bin": {
     "autogroq": "./dist/cli.cjs"
   },
+  "scripts": {
+    "build": "unbuild",
+    "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
+    "lint": "eslint --cache --fix . && prettier -c src",
+    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "husky install"
+  },
+  "packageManager": "pnpm@9.5.0",
   "dependencies": {
     "c12": "^1.11.1",
     "citty": "^0.1.6",
@@ -14,7 +43,6 @@
     "lodash": "^4.17.21",
     "prettier": "^3.3.3"
   },
-  "description": "Automatically create groq queries from your sanity.io CMS schemas.",
   "devDependencies": {
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.14.11",
@@ -22,42 +50,9 @@
     "changelogen": "^0.5.5",
     "eslint": "^9.7.0",
     "eslint-config-unjs": "^0.3.2",
-    "pre-commit": "^1.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "unbuild": "^2.0.0",
     "vitest": "^2.0.3"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/main.mjs",
-      "require": "./dist/main.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "license": "MIT",
-  "main": "./dist/main.cjs",
-  "name": "autogroq",
-  "packageManager": "pnpm@9.5.0",
-  "pre-commit": [
-    "precommit",
-    "lint"
-  ],
-  "repository": {
-    "url": "https://github.com/niklas-may/autogroq"
-  },
-  "scripts": {
-    "build": "unbuild",
-    "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
-    "lint": "eslint --cache --fix . && prettier -c src",
-    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
-    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "type": "module",
-  "types": "./dist/main.d.ts",
-  "version": "0.0.2"
+  }
 }
