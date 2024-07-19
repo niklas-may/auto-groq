@@ -25,10 +25,10 @@
   "scripts": {
     "build": "unbuild",
     "dev:cli": "node --watch --loader ts-node/esm ./src/cli.ts generate -c ./playground/",
+    "dev:test": "vitest",
     "lint": "eslint --cache --fix . && prettier -c src",
     "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run"
   },
   "packageManager": "pnpm@9.5.0",
   "dependencies": {

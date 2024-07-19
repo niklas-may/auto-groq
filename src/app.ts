@@ -7,7 +7,7 @@ import { SchemaProjection } from "./lib/field";
 import { StringLike } from "./types";
 import { QueryTransformer, transformPartials } from "./lib/query";
 import { ResolverService } from "./lib/resolver";
-import consola from "consola";
+import { createConsola } from "consola";
 
 export interface SchemaVisitorResult {
   projection: StringLike;
@@ -16,6 +16,7 @@ export interface SchemaVisitorResult {
 export type QueryCallbackContext = (args: any) => any;
 
 export class App {
+  private logger = createConsola({  formatOptions: { date: false } }).withTag("autogroq");
   private options: Options;
 
   private resolverService: ResolverService;
@@ -42,17 +43,19 @@ export class App {
     const st = performance.now();
     const queryCount = Object.entries(this.config.queries).length;
     const queryName = queryCount > 1 ? "queries" : "query";
-    consola.start(`Found ${queryCount} ${queryName} in config.`);
+    this.logger.start(`Found ${queryCount} ${queryName} in config.`);
 
     this.generateQueries();
     this.processQueries();
     await this.fileService.flush();
 
-    consola.info(`Processed ${this.fileService.store.size} ${this.fileService.store.size > 1 ? "files" : "file"}, updated ${this.fileService.filesWriten}.`);
+    this.logger.info(
+      `Processed ${this.fileService.store.size} ${this.fileService.store.size > 1 ? "files" : "file"}, updated ${this.fileService.filesWriten}.`,
+    );
 
     const et = performance.now();
     const t = Math.round(et - st);
-    consola.success(`Finished in ${t}ms.`);
+    this.logger.success(`Finished in ${t}ms.`);
   }
 
   private processQueries() {
@@ -79,7 +82,10 @@ export class App {
 
       const queryContext: Record<string, any> = {};
       for (const v of schema.visitor) {
-        queryContext[v.id] = v.result;
+        queryContext[v.id] = v.result ?? "";
+        if (!v.result) {
+          this.logger.warn(`Schema visitor "${v.id}" did not return a result for schema "${key}".`);
+        }
       }
       this.queryContext[key] = queryContext as SchemaVisitorResult;
     }

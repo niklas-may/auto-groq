@@ -19,16 +19,6 @@ export class Schema {
   }
 
   private traverse(field: Documentlike, res = [], parentField?: Documentlike): any[] {
-    // if (!this.isIterable(field)) {
-    //   const next = this.visitField({
-    //     children: [],
-    //     field,
-    //     parentField,
-    //     result: res,
-    //   });
-    //   return next;
-    // }
-
     const nextFields = this.getNext(field);
     const children = (nextFields as any[]).reduce((result, nextField) => {
       return this.traverse(nextField, result, field);
