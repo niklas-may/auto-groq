@@ -2,8 +2,8 @@ import path from "node:path";
 import * as prettier from "prettier";
 import { glob } from "glob";
 import { existsSync, promises, mkdirSync } from "node:fs";
-import { Options } from "./config";
 import kebabCase from "lodash/kebabCase";
+import { Context, IContextModule } from "./context";
 
 interface IFilePath {
   extension: string;
@@ -61,7 +61,7 @@ export class File implements IFilePath {
   }
 }
 
-export class FileService {
+export class FileService implements IContextModule {
   store: Map<string, File> = new Map();
   interceptor: Array<(f: File) => File> = [];
 
@@ -69,7 +69,7 @@ export class FileService {
   touchedFiles = new Set<string>();
   private flushed = false;
 
-  constructor(private options: Options) {}
+  constructor(public context: Context) {}
 
   getOrCreate(filePath: IFilePath): File {
     const fp = File.createFullPath(filePath);
@@ -103,7 +103,7 @@ export class FileService {
     const dirs: string[] = [];
     const files: string[] = [];
 
-    const currentFiles = await glob(`${path.resolve(this.options.outPath)}/**/*`, { stat: true, withFileTypes: true });
+    const currentFiles = await glob(`${path.resolve(this.context.options.outPath)}/**/*`, { stat: true, withFileTypes: true });
     for (const f of currentFiles) {
       f.isDirectory() ? dirs.push(f.fullpath()) : files.push(f.fullpath());
     }

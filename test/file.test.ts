@@ -1,23 +1,28 @@
 import { describe, expect, it, afterEach } from "vitest";
-import { Options } from "../src/lib/config";
 import { FileService } from "../src/lib/file";
 import { existsSync, promises, rmSync } from "node:fs";
 import path from "node:path";
 import { glob } from "glob";
+import { Context } from "src/lib/context";
 
 describe("[FileService]", () => {
-  const options: Options = {
-    inlineResolver: false,
-    outPath: "./test/fixtures/.autogroq",
-  };
+  const ctx = new Context(
+    {
+      schemas: {},
+      resolvers: {},
+      queries: {},
+    },
+    { outPath: "./test/fixtures/.autogroq", inlineResolver: true },
+  );
+  const { outPath } = ctx.options;
 
   afterEach(async () => {
-    rmSync(options.outPath, { recursive: true, force: true });
+    rmSync(ctx.options.outPath, { recursive: true, force: true });
   });
 
   it("should wirte file to disk", async () => {
-    const service = new FileService(options);
-    const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
+    const service = new FileService(ctx);
+    const file = service.getOrCreate({ name: "test", path: outPath, extension: "ts" });
 
     file.content = "// Test file";
     await service.flush();
@@ -25,8 +30,8 @@ describe("[FileService]", () => {
   });
 
   it("flag new file as dirty", async () => {
-    const service = new FileService(options);
-    const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
+    const service = new FileService(ctx);
+    const file = service.getOrCreate({ name: "test", path: outPath, extension: "ts" });
 
     file.content = "// Test file";
     const dirty = await file.checkIsDirty();
@@ -34,8 +39,8 @@ describe("[FileService]", () => {
   });
 
   it("flag file as not dirty once written", async () => {
-    const service = new FileService(options);
-    const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
+    const service = new FileService(ctx);
+    const file = service.getOrCreate({ name: "test", path: outPath, extension: "ts" });
 
     file.content = "// Test file";
     await service.flush();
@@ -44,8 +49,8 @@ describe("[FileService]", () => {
   });
 
   it("flag file as dirty after update", async () => {
-    const service = new FileService(options);
-    const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
+    const service = new FileService(ctx);
+    const file = service.getOrCreate({ name: "test", path: outPath, extension: "ts" });
 
     file.content = "// Test file";
     await service.flush();
@@ -55,16 +60,16 @@ describe("[FileService]", () => {
   });
 
   it("should remove files that are not in the current store", async () => {
-    const service = new FileService(options);
+    const service = new FileService(ctx);
 
-    await promises.mkdir(options.outPath, { recursive: true });
-    await promises.mkdir(path.join(options.outPath, "externalFolder"), { recursive: true });
-    await promises.writeFile(path.join(options.outPath, "external.ts"), "// external", { encoding: "utf8" });
-    const file = service.getOrCreate({ name: "test", path: options.outPath, extension: "ts" });
+    await promises.mkdir(outPath, { recursive: true });
+    await promises.mkdir(path.join(outPath, "externalFolder"), { recursive: true });
+    await promises.writeFile(path.join(outPath, "external.ts"), "// external", { encoding: "utf8" });
+    const file = service.getOrCreate({ name: "test", path: outPath, extension: "ts" });
 
     file.content = "// Test file";
     await service.flush();
-    const files = await glob(`${options.outPath}/**/*`);
+    const files = await glob(`${outPath}/**/*`);
     expect(files.length).toBe(1);
     expect(file.fullPath.endsWith(files[0])).toBe(true);
   });

@@ -1,9 +1,7 @@
 import { format } from "groqfmt-nodejs";
-import { FileService } from "./file";
+import { Context } from "./context";
 
-type QueryTransformContext = { fileService: FileService };
-
-export type QueryTransformer = (name: string, query: string, app: QueryTransformContext) => string;
+export type QueryTransformer = (name: string, query: string, context: Context) => string;
 
 export const transformPartials: QueryTransformer = (name: string, query: string) => {
   const queryPretty = format(query);

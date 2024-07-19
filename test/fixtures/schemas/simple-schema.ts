@@ -7,39 +7,23 @@ export const simpleSchema = {
       type: "string",
     },
     {
-      name: "stringL1_2",
+      name: "globalResolver",
       type: "localeString",
-    },
-    {
-      name: "obj1_string_x",
-      type: "myObject",
     },
     {
       type: "array",
       name: "arrayWithMultipleTypes",
       of: [
         {
-          name: "customComplex",
+          name: "globalResolver",
           type: "localeString",
-        },
-        {
-          name: "customComplex2",
-          type: "localeString",
-        },
-        {
-          name: "obj1_string_x",
-          type: "myObject",
-        },
-        {
-          name: "hello",
-          type: "string",
         },
         {
           type: "object",
           name: "obj3",
           fields: [
             {
-              name: "obj3_string_1",
+              name: "globalResolver",
               type: "localeString",
             },
             {
@@ -55,7 +39,7 @@ export const simpleSchema = {
       name: "arrayWithOneType",
       of: [
         {
-          name: "oneField",
+          name: "globalResolver",
           type: "localeString",
         },
       ],
@@ -65,7 +49,7 @@ export const simpleSchema = {
       name: "arrayWithOneObjectType",
       of: [
         {
-          name: "objectType",
+          name: "inlineResolver",
           type: "object",
           resolver: '{ "{{name}}_new": {{name}} }',
         },
@@ -73,7 +57,7 @@ export const simpleSchema = {
     },
     {
       type: "object",
-      name: "obj1Missing",
+      name: "nestedObject",
       fields: [
         {
           name: "obj1_string_2",
@@ -81,10 +65,10 @@ export const simpleSchema = {
         },
         {
           type: "object",
-          name: "obj2",
+          name: "objectChild",
           fields: [
             {
-              name: "obj2_string_1",
+              name: "inlineResolver",
               type: "string",
               resolver: '{ "{{name}}_property": {{name}} }',
             },

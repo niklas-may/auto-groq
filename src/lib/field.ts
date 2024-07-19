@@ -1,6 +1,8 @@
 import consola from "consola";
 import type { Documentlike, StringLike } from "./../types";
-import type { SchemaContext } from "./schema";
+import { ResolverCompiler } from "./resolver";
+import { Context } from "./context";
+
 export interface FieldMeta {
   includesResolvable: boolean;
   isResolvable: boolean;
@@ -15,18 +17,17 @@ export interface OnFieldArgs {
   meta: FieldMeta;
 }
 
-export interface FieldVisitor {
-  context: SchemaContext;
+export interface FieldVisitorV2 {
   id: string;
   onField: (args: OnFieldArgs) => any;
   result: StringLike;
 }
 
-export class SchemaProjection implements FieldVisitor {
+export class SchemaProjection implements FieldVisitorV2 {
   readonly id = "projection";
   result = "";
 
-  constructor(readonly context: SchemaContext) {}
+  constructor(public readonly context: Context) {}
 
   onField(args: OnFieldArgs) {
     const { field, parentField, children, meta, result } = args;
@@ -39,8 +40,7 @@ export class SchemaProjection implements FieldVisitor {
     if (!includesResolvable) return (this.result = result);
 
     if (isResolvable) {
-      const res = this.context.resolverService.get(field.type, field.resolver);
-
+      const res = this.getResolver(field);
       if (!res) {
         consola.error(`Resolver not found`, { field });
         return (this.result = result);
@@ -70,6 +70,16 @@ export class SchemaProjection implements FieldVisitor {
     return (this.result = result);
   }
 
+  private getResolver(field: Documentlike): ResolverCompiler | undefined {
+    if (this.context.resolver.has(field.type)) {
+      return this.context.resolver.get(field.type);
+    }
+
+    if (field.resolver) {
+      return new ResolverCompiler(field.resolver);
+    }
+  }
+
   private buildArray(left: string, right: string) {
     return `${left}[] {\n${right ?? ""}\n}`;
   }
@@ -90,11 +100,11 @@ export class SchemaProjection implements FieldVisitor {
   }
 }
 
-export class DummyFactory implements FieldVisitor {
+export class DummyFactory implements FieldVisitorV2 {
   readonly id = "debug";
   result = "string";
 
-  constructor(readonly context: SchemaContext) {}
+  constructor(readonly context: Context) {}
 
   onField(args: OnFieldArgs) {
     if (args.meta.isIterable) {

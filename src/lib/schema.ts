@@ -1,20 +1,18 @@
 import type { Documentlike } from "./../types";
-import type { FieldVisitor, FieldMeta } from "./field";
-import { ResolverService } from "./resolver";
-
-export type SchemaContext = {
-  resolverService: ResolverService;
-};
+import { Context, IContextModule } from "./context";
+import { type FieldMeta, SchemaProjection, FieldVisitorV2 } from "./field";
 
 export class Schema {
-  visitor: FieldVisitor[];
+  visitor: FieldVisitorV2[] = [];
 
   constructor(
-    readonly context: SchemaContext,
+    readonly context: Context,
     schema: Documentlike,
-    visitor: FieldVisitor[],
+    visitor: Array<new (ctx: Context) => FieldVisitorV2>,
   ) {
-    this.visitor = visitor;
+    for (const V of visitor) {
+      this.visitor.push(new V(context));
+    }
     this.traverse(schema);
   }
 
@@ -79,10 +77,35 @@ export class Schema {
   }
 
   private isResolvable(field: Documentlike) {
-    return !!field.resolver || !!this.context.resolverService.get(field.type);
+    return !!field.resolver || !!this.context.resolver.has(field.type);
   }
 
   private isIterable(field: Documentlike): boolean {
     return ["object", "array", "document"].includes(field.type);
+  }
+}
+
+export class SchemaContextModule implements IContextModule {
+  data = new Map<string, any>();
+
+  constructor(public context: Context) {}
+  get(id: string): Schema {
+    if (this.data.has(id)) {
+      return this.data.get(id);
+    }
+    const schema = this.createSchema(id);
+    return this.set(id, schema).get(id);
+  }
+  set(id: string, data: any) {
+    return this.data.set(id, data);
+  }
+  has(id: string) {
+    return this.data.has(id);
+  }
+
+  private createSchema(name: string): Schema {
+    const rawSchema = this.context.config.schemas[name];
+    const schema = new Schema(this.context, rawSchema, [SchemaProjection]);
+    return schema;
   }
 }

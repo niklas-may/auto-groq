@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Config } from "./config";
+import { IContextModule, Context } from "./context";
 
 /**
  * @description A valid groq statement either containing of a left and a right side
@@ -31,22 +31,27 @@ type TemplateVariables = {
   name: string;
 };
 
-export class ResolverService {
-  private resolver = new Map<string, ResolverCompiler>();
+export class ResolverContextModule implements IContextModule {
+  data = new Map<string, ResolverCompiler>();
 
-  constructor(resolver: Config["resolvers"]) {
-    for (const [key, val] of Object.entries(resolver ?? {})) {
-      this.resolver.set(key, new ResolverCompiler(val));
+  constructor(public context: Context) {}
+
+  get(id: string): ResolverCompiler | undefined {
+    if (this.data.has(id)) {
+      return this.data.get(id);
     }
-  }
+    const rawResolver = this.context.config.resolvers ? this.context.config.resolvers[id] : undefined;
+    const res = rawResolver ? this.set(id, rawResolver).get(id) : undefined;
 
-  get(name: string, resolver?: Resolver): ResolverCompiler | undefined {
-    const res = resolver ? new ResolverCompiler(resolver) : this.resolver.get(name);
     return res;
   }
 
-  set(name: string, resolver: Resolver) {
-    return this.resolver.set(name, new ResolverCompiler(resolver));
+  set(id: string, resolver: Resolver) {
+    return this.data.set(id, new ResolverCompiler(resolver));
+  }
+
+  has(id: string) {
+    return this.data.has(id) || !!(this.context.config.resolvers && this.context.config.resolvers[id]);
   }
 }
 
