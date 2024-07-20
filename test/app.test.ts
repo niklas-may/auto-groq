@@ -3,22 +3,25 @@ import { App } from "../src/app";
 import { createConfig } from "../src/lib/config";
 import { simpleSchema } from "./fixtures/schemas/simple-schema";
 import { simpleSmallSchema } from "./fixtures/schemas/simple-small-schema";
+import { simpleSmallSchemaAlt } from "./fixtures/schemas/simple-small-schema-alt";
 
 describe("[App]", () => {
   it("Query should match snapshot ", async () => {
     const { config, options } = createConfig(
       {
         schemas: {
-          post: simpleSchema,
+          simple: simpleSchema,
+          small: simpleSmallSchema,
+          smallAlt: simpleSmallSchemaAlt
         },
         resolvers: {
           localeString: /* groq */ `"{{name}}": coalesce({{name}}[$lang], {{name}}.en)`,
           myObject: /* groq */ '"{{name}}_my_object_type" { {{name}} }',
         },
         queries: {
-          getPostById: ({ post }) => `
+          getSimpleById: ({ simple }) => `
           *[_id == $id] {
-              ${post.projection} 
+              ${simple.projection} 
           }`,
         },
       },
@@ -29,12 +32,32 @@ describe("[App]", () => {
     await app.run();
 
     // @ts-ignore
-    const res = Array.from(app.context.file.store.values()).find((f) => f.name === "getPostById").content;
+    const res = Array.from(app.context.file.store.values()).find((f) => f.name === "getSimpleById").content;
     expect(res).toMatchInlineSnapshot(`
-      "export const getPostByIdQuery = /* groq */ \`
+      "export const getSimpleByIdQuery = /* groq */ \`
       *[_id == $id] {
         ...,
         "globalResolver": coalesce(globalResolver[$lang], globalResolver.en),
+        singleTypeReferenceWithFollow[]-> {
+          ...,
+          "localString": coalesce(localString[$lang], localString.en)
+        },
+        multiTypeReferenceWithFollowSingleResolver[]-> {
+          _type == "small" => {
+            ...,
+            "localString": coalesce(localString[$lang], localString.en)
+          }
+        },
+        multiTypeReferenceWithFollowMultiResolver[]-> {
+          _type == "small" => {
+            ...,
+            "localString": coalesce(localString[$lang], localString.en)
+          },
+          _type == "smallAlt" => {
+            ...,
+            "localString": coalesce(localString[$lang], localString.en)
+          }
+        },
         arrayWithMultipleTypes[] {
           ...,
           _type == "globalResolver" => {

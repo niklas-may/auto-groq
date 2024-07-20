@@ -73,11 +73,12 @@ export class Schema {
   }
 
   private getNext(field: Documentlike) {
-    return field.fields ?? field.of ?? [];
+    return field.fields ?? field.of ?? field.to ?? [];
   }
 
   private isResolvable(field: Documentlike) {
-    return !!field.resolver || !!this.context.resolver.has(field.type);
+    // TODO add follow to autogroq property
+    return !!field.resolver || !!this.context.resolver.has(field.type) || field.autogroq?.follow;
   }
 
   private isIterable(field: Documentlike): boolean {
@@ -99,8 +100,8 @@ export class SchemaContextModule implements IContextModule {
   set(id: string, data: any) {
     return this.data.set(id, data);
   }
-  has(id: string) {
-    return this.data.has(id);
+  has(id: string): boolean {
+    return this.data.has(id) || this.context.config.schemas[id] !== undefined;
   }
 
   private createSchema(name: string): Schema {

@@ -1,5 +1,5 @@
 export const simpleSchema = {
-  name: "root",
+  name: "simple",
   type: "document",
   fields: [
     {
@@ -9,6 +9,60 @@ export const simpleSchema = {
     {
       name: "globalResolver",
       type: "localeString",
+    },
+    {
+      name: "singleTypeReferenceWithFollow",
+      type: "reference",
+      to: [
+        {
+          type: "small",
+          autogroq: {
+            follow: true,
+          },
+        },
+      ],
+    },
+    {
+      name: "multiTypeReferenceWithFollowSingleResolver",
+      type: "reference",
+      to: [
+        {
+          type: "small",
+          autogroq: {
+            follow: true,
+          },
+        },
+        {
+          type: "other",
+        },
+      ],
+    },
+    {
+      name: "multiTypeReferenceWithFollowMultiResolver",
+      type: "reference",
+      to: [
+        {
+          type: "small",
+          autogroq: {
+            follow: true,
+          },
+        },
+        {
+          type: "smallAlt",
+          autogroq: {
+            follow: true,
+          },
+        },
+      ],
+    },
+    {
+      name: "referenceNoFollow",
+      type: "reference",
+      to: [
+        {
+          type: "small",
+        },
+      ],
     },
     {
       type: "array",

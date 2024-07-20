@@ -1,5 +1,5 @@
 import consola from "consola";
-import type { Documentlike, StringLike } from "./../types";
+import type { Documentlike } from "./../types";
 import { ResolverCompiler } from "./resolver";
 import { Context } from "./context";
 
@@ -20,7 +20,7 @@ export interface OnFieldArgs {
 export interface FieldVisitorV2 {
   id: string;
   onField: (args: OnFieldArgs) => any;
-  result: StringLike;
+  result: string;
 }
 
 export class SchemaProjection implements FieldVisitorV2 {
@@ -33,9 +33,28 @@ export class SchemaProjection implements FieldVisitorV2 {
     const { field, parentField, children, meta, result } = args;
     const { includesResolvable, isResolvable } = meta;
 
-    const isInArray = parentField?.type === "array";
-    const isInArrayWithSiblings = (parentField?.of?.length ?? 1) > 1;
-    const isConditonal = isInArray && isInArrayWithSiblings;
+    const isInArrayLike = ["array", "reference"].includes(parentField?.type ?? "");
+    const isInArrayWithSiblings = ((parentField?.of?.length || parentField?.to?.length) ?? 1) > 1;
+    const isConditonal = isInArrayLike && isInArrayWithSiblings;
+
+    if (field.type === "reference" && includesResolvable) {
+      const groq = this.buildReference(field.name, args.children);
+      return (this.result = this.concat(args, groq));
+    }
+
+    if (parentField?.type === "reference" && field.autogroq?.follow) {
+      const schemaExists = this.context.schema.has(field.type);
+
+      if (schemaExists) {
+        const projection = this.context.schema.get(field.type).visitor[0]?.result ?? ("" as string);
+        const builder = isConditonal ? this.buildConditional : (left: string, right: string) => right
+        const  groq = builder(field.type, projection)
+        return (this.result = this.concat(args, groq));
+      } else {
+        consola.error("Schama not found");
+        return this.result;
+      }
+    }
 
     if (!includesResolvable) return (this.result = result);
 
@@ -48,7 +67,7 @@ export class SchemaProjection implements FieldVisitorV2 {
 
       const resolver =
         isConditonal && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed ? res.getUnwrapped(field.name) : res.get(field.name);
-      const groq = isConditonal ? this.buildConditionalObject(field.name, resolver) : resolver;
+      const groq = isConditonal ? this.buildConditional(field.name, resolver) : resolver;
       return (this.result = this.concat(args, groq));
     }
 
@@ -57,7 +76,7 @@ export class SchemaProjection implements FieldVisitorV2 {
     }
 
     if (field.type === "object") {
-      const builder = isConditonal ? this.buildConditionalObject : this.buildObject;
+      const builder = isConditonal ? this.buildConditional : this.buildObject;
       const obj = builder(field.name, this.buildChildren(args));
       return (this.result = this.concat(args, obj));
     }
@@ -88,12 +107,16 @@ export class SchemaProjection implements FieldVisitorV2 {
     return `${left} {\n${right ?? ""}\n}`;
   }
 
-  private buildConditionalObject(left: string, right: string) {
+  private buildConditional(left: string, right: string) {
     return `_type == "${left}" => {\n${right ?? ""}\n}`;
   }
 
   private buildChildren({ children }: OnFieldArgs) {
     return "...,\n" + (children ?? "");
+  }
+
+  private buildReference(left: string, right: string) {
+    return `${left}[] -> { ${right} }`;
   }
   private concat({ result }: OnFieldArgs, groq: string) {
     return (result ? result + ",\n" : "") + groq;

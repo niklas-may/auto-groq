@@ -1,5 +1,5 @@
-export const simpleSmallSchema = {
-  name: "simpleSmall",
+export const simpleSmallSchemaAlt = {
+  name: "simpleSmallAlt",
   type: "document",
   fields: [
     {

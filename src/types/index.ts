@@ -3,7 +3,9 @@ export type Documentlike = {
   type: string;
   resolver?: boolean | any;
   of?: Documentlike[];
+  to?: Documentlike[]; 
   fields?: Documentlike[];
+  autogroq?: Record<string, any>
 };
 
 /**
