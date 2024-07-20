@@ -1,5 +1,5 @@
 import consola from "consola";
-import type { Documentlike } from "./../types";
+import type { AutoGroqFieldConfigObject, Documentlike } from "./../types";
 import { ResolverCompiler } from "./resolver";
 import { Context } from "./context";
 
@@ -42,8 +42,9 @@ export class SchemaProjection implements FieldVisitorV2 {
       return (this.result = this.concat(args, groq));
     }
 
-    if (parentField?.type === "reference" && field.autogroq?.follow) {
-      const schemaExists = this.context.schema.has(field.type);
+    if (parentField?.type === "reference" && typeof field.autogroq === "object" && (field.autogroq as AutoGroqFieldConfigObject).followReference) {
+      const autoGroqConfig = field.autogroq as AutoGroqFieldConfigObject;
+      const schemaExists = this.context.schema.has(typeof autoGroqConfig.followReference === "boolean" ? field.type : autoGroqConfig.followReference);
 
       if (schemaExists) {
         const projection = this.context.schema.get(field.type).visitor[0]?.result ?? ("" as string);
@@ -66,7 +67,9 @@ export class SchemaProjection implements FieldVisitorV2 {
       }
 
       const resolver =
-        isConditonal && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed ? res.getUnwrapped(field.name) : res.get(field.name);
+        isConditonal && parentField && (parentField.of?.length ?? 0) >= 1 && res.isObject && !res.isRenamed
+          ? res.getUnwrapped(field.name)
+          : res.get(field.name);
       const groq = isConditonal ? this.buildConditional(field.name, resolver) : resolver;
       return (this.result = this.concat(args, groq));
     }
@@ -94,8 +97,9 @@ export class SchemaProjection implements FieldVisitorV2 {
       return this.context.resolver.get(field.type);
     }
 
-    if (field.resolver) {
-      return new ResolverCompiler(field.resolver);
+    if (field.autogroq) {
+      const rawResolver = typeof field.autogroq === "object" ? (field.autogroq as AutoGroqFieldConfigObject).resolver : field.autogroq;
+      return new ResolverCompiler(rawResolver);
     }
   }
 

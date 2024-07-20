@@ -5,101 +5,84 @@ import { existsSync, promises, mkdirSync } from "node:fs";
 import kebabCase from "lodash/kebabCase";
 import { Context, IContextModule } from "./context";
 
-interface IFilePath {
-  extension: string;
+interface IFile {
+  directory: string;
   name: string;
-  path: string;
+  extension?: string;
+  content?: string;
 }
 
-export class File implements IFilePath {
+export class File implements IFile {
   extension: string;
   content: string;
   name: string;
-  path: string;
+  directory: string;
 
-  private fileContent: string | undefined = undefined;
-  dirty = true;
+  contentOnDisk: string | undefined = undefined;
 
-  constructor(config: { extension: string; content?: string; name: string; path: string }) {
-    this.content = config.content ?? "";
-    this.extension = config.extension;
-    this.name = config.name;
-    this.path = config.path;
+  constructor(file: IFile) {
+    this.name = file.name;
+    this.content = file.content ?? "";
+    this.extension = file.extension ?? "";
+    this.directory = file.directory;
   }
 
-  get fileName() {
-    return File.createFileName(this);
-  }
-
-  get fullPath() {
-    return File.createFullPath(this);
-  }
-
-  static createFileName(file: IFilePath) {
-    return `${kebabCase(file.name)}.${file.extension}`;
-  }
-
-  static createFullPath(file: IFilePath) {
-    return path.resolve(path.join(file.path, File.createFileName(file)));
-  }
-
-  async checkIsDirty() {
-    if (!this.fileContent) {
-      const exists = existsSync(this.fullPath);
-      if (!exists) {
-        this.dirty = true;
-        this.fileContent = "";
-        return this.dirty;
-      }
-      this.fileContent = await promises.readFile(this.fullPath, "utf8");
-    }
-    this.dirty = this.fileContent !== this.content;
-    if (this.dirty) {
-      this.fileContent = undefined;
-    }
-    return this.dirty;
+  get fullName() {
+    return [this.directory, this.name, this.extension].filter(Boolean).join("-");
   }
 }
 
 export class FileService implements IContextModule {
   store: Map<string, File> = new Map();
-  interceptor: Array<(f: File) => File> = [];
 
   filesWriten = 0;
   touchedFiles = new Set<string>();
-  private flushed = false;
+  intital = true;
 
   constructor(public context: Context) {}
 
-  getOrCreate(filePath: IFilePath): File {
-    const fp = File.createFullPath(filePath);
-    this.touchedFiles.add(fp);
-    return this.store.get(fp) ?? this.add(new File(filePath));
+  set(file: File): File {
+    this.touchedFiles.add(file.fullName);
+    const currentFile = this.store.get(file.fullName);
+    if (currentFile) file.contentOnDisk = currentFile.contentOnDisk;
+    return this.store.set(file.fullName, file).get(file.fullName) as File;
   }
 
-  private add(file: File): File {
-    this.store.set(file.fullPath, file);
-    return this.store.get(file.fullPath)!;
+  async isDirty(file: File) {
+    if (!file.contentOnDisk) {
+      const exists = existsSync(this.resolveFilePath(file));
+      if (!exists) {
+        file.contentOnDisk = "";
+        return true;
+      }
+      file.contentOnDisk = await promises.readFile(this.resolveFilePath(file), "utf8");
+    }
+    const dirty = file.contentOnDisk !== file.content;
+    if (dirty) {
+      file.contentOnDisk = undefined;
+    }
+    return dirty;
   }
 
   async flush() {
     this.filesWriten = 0;
-    await Promise.all(
-      [...this.store].map(([_, f]) => {
-        const file = this.interceptor.reduce((acc, interceptor) => interceptor(acc), f);
-        return this.writeFile(file);
-      }),
-    );
+    await Promise.all([...this.store].map(([_, file]) => this.writeFile(file)));
 
-    if (this.flushed) {
-      this.cleanupFlush();
+    if (this.intital) {
+      await this.initialCleanup();
+      this.intital = false;
     } else {
-      await this.cleanup();
-      this.flushed = true;
+      this.cleanup();
     }
   }
 
-  private async cleanup() {
+  resolveFilePath(file: IFile) {
+    const extension = file.extension === "" ? this.context.options.defaultExtenstion : file.extension;
+    const name = `${kebabCase(file.name)}.${extension}`;
+    return path.resolve(path.join(this.context.options.outPath, file.directory, name));
+  }
+
+  private async initialCleanup() {
     const dirs: string[] = [];
     const files: string[] = [];
 
@@ -108,42 +91,45 @@ export class FileService implements IContextModule {
       f.isDirectory() ? dirs.push(f.fullpath()) : files.push(f.fullpath());
     }
 
-    for (const f of files) {
-      if (!this.store.get(f)) {
-        await this.deleteFile(f);
+    const storeFilePaths = new Set(Array.from(this.store).map(([_, file]) => this.resolveFilePath(file)));
+    for (const filePath of files) {
+      if (!storeFilePaths.has(filePath)) {
+        await promises.unlink(filePath);
       }
     }
 
     for (const d of dirs) {
-      const exists = [...this.store].some(([_, v]) => v.fullPath.startsWith(d));
+      const exists = [...this.store].some(([_, file]) => this.resolveFilePath(file).startsWith(d));
       if (!exists) {
         await promises.rmdir(d);
       }
     }
   }
 
-  private cleanupFlush() {
+  private cleanup() {
     for (const [_, f] of this.store) {
-      if (!this.touchedFiles.has(f.fullPath)) {
-        this.deleteFile(f.fullPath);
+      if (!this.touchedFiles.has(f.fullName)) {
+        this.deleteFile(f);
       }
     }
     this.touchedFiles.clear();
   }
 
-  private async deleteFile(path: string) {
-    return promises.unlink(path);
+  private async deleteFile(file: File) {
+    return promises.unlink(this.resolveFilePath(file));
   }
 
   private async writeFile(file: File) {
-    mkdirSync(file.path, { recursive: true });
+    const filePath = this.resolveFilePath(file);
+    mkdirSync(path.dirname(filePath), { recursive: true });
 
     file.content = await prettier.format(file.content, { parser: "babel-ts" });
-    const isDirty = await file.checkIsDirty();
+    const isDirty = await this.isDirty(file);
     if (!isDirty) return;
 
+    file.contentOnDisk = file.content;
     this.filesWriten++;
 
-    return await promises.writeFile(file.fullPath, file.content);
+    return await promises.writeFile(filePath, file.content);
   }
 }

@@ -6,7 +6,7 @@ export type SchemaConfig = Record<string, Documentlike>;
 
 export type QueriesConfig<T extends object> = Record<string, (ctx: Record<keyof T, SchemaVisitorResult>) => string>;
 
-export type Config<T extends SchemaConfig = Record<string, Documentlike>> = {
+export type Config<T extends SchemaConfig = Record<string, any>> = {
   schemas: T;
   queries: QueriesConfig<T>;
   resolvers?: Record<string, Resolver>;
@@ -14,6 +14,7 @@ export type Config<T extends SchemaConfig = Record<string, Documentlike>> = {
 
 export type UserOptions = {
   outPath?: string;
+  defaultExtenstion?: string;
   inlineResolver?: boolean;
 };
 
@@ -22,11 +23,6 @@ export type Options<T extends UserOptions = UserOptions> = {
 };
 
 export type CreateConfigReturn<T extends Record<string, any>> = { config: Config<T>; options?: UserOptions };
-
-export const defaultOptions: Options = {
-  outPath: "./.autogroq",
-  inlineResolver: true,
-};
 
 export function createConfig<T extends Record<string, any>>(config: Config<T>, options?: UserOptions): CreateConfigReturn<T> {
   return { config, options };

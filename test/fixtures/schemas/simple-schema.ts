@@ -17,7 +17,7 @@ export const simpleSchema = {
         {
           type: "small",
           autogroq: {
-            follow: true,
+            followReference: true,
           },
         },
       ],
@@ -29,7 +29,7 @@ export const simpleSchema = {
         {
           type: "small",
           autogroq: {
-            follow: true,
+            followReference: true,
           },
         },
         {
@@ -44,13 +44,13 @@ export const simpleSchema = {
         {
           type: "small",
           autogroq: {
-            follow: true,
+            followReference: true,
           },
         },
         {
           type: "smallAlt",
           autogroq: {
-            follow: true,
+            followReference: true,
           },
         },
       ],
@@ -105,7 +105,7 @@ export const simpleSchema = {
         {
           name: "inlineResolver",
           type: "object",
-          resolver: '{ "{{name}}_new": {{name}} }',
+          autogroq: '{ "{{name}}_new": {{name}} }',
         },
       ],
     },
@@ -124,7 +124,7 @@ export const simpleSchema = {
             {
               name: "inlineResolver",
               type: "string",
-              resolver: '{ "{{name}}_property": {{name}} }',
+              autogroq: '{ "{{name}}_property": {{name}} }',
             },
             {
               name: "obj2_string_2",

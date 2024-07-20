@@ -31,7 +31,7 @@ type TemplateVariables = {
   name: string;
 };
 
-export class ResolverContextModule implements IContextModule {
+export class ResolverService implements IContextModule {
   data = new Map<string, ResolverCompiler>();
 
   constructor(public context: Context) {}

@@ -1,13 +1,11 @@
-import path from "node:path";
-import defu from "defu";
-import { type Config, defaultOptions, UserOptions } from "./lib/config";
-import { StringLike } from "./types";
+import { type Config, UserOptions } from "./lib/config";
 import { QueryTransformer, transformPartials } from "./lib/query";
 import { createConsola } from "consola";
 import { Context } from "./lib/context";
+import { File } from "./lib/file";
 
 export interface SchemaVisitorResult {
-  projection: StringLike;
+  projection: string;
 }
 
 export type QueryCallbackContext = (args: any) => any;
@@ -17,7 +15,7 @@ export class App {
   private context: Context;
 
   constructor(config: Config, options?: UserOptions) {
-    this.context = new Context(config, defu(options, defaultOptions));
+    this.context = new Context(config, options);
   }
 
   run = () =>
@@ -40,17 +38,16 @@ export class App {
 
       for (const [name, func] of Object.entries(this.context.config.queries)) {
         const baseQuery = func(queryContext);
-
         const query = queryTransformer.reduce((query, handler) => handler(name, query, this.context), baseQuery);
 
-        const file = this.context.file.getOrCreate({
-          extension: "ts",
+        const file = new File({
           name,
-          path: path.join(this.context.options.outPath, "queries"),
+          directory: "queries",
+          content: query,
         });
-
-        file.content = query;
+        this.context.file.set(file);
       }
+
       await this.context.file.flush();
     });
 

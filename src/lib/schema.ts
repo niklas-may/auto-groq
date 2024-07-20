@@ -77,8 +77,7 @@ export class Schema {
   }
 
   private isResolvable(field: Documentlike) {
-    // TODO add follow to autogroq property
-    return !!field.resolver || !!this.context.resolver.has(field.type) || field.autogroq?.follow;
+    return !!field.autogroq || !!this.context.resolver.has(field.type);
   }
 
   private isIterable(field: Documentlike): boolean {
@@ -86,7 +85,7 @@ export class Schema {
   }
 }
 
-export class SchemaContextModule implements IContextModule {
+export class SchemaService implements IContextModule {
   data = new Map<string, any>();
 
   constructor(public context: Context) {}
