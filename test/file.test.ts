@@ -62,7 +62,7 @@ describe("[FileService]", () => {
     expect(isDirty).toBe(true);
   });
 
-  it.only("should remove files that are not in the current store", async () => {
+  it("should remove files that are not in the current store", async () => {
     const service = new FileService(ctx);
     
     await promises.mkdir(outPath, { recursive: true });
