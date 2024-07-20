@@ -21,8 +21,8 @@ dependencies:
     specifier: ^11.0.0
     version: 11.0.0
   groqfmt-nodejs:
-    specifier: ^1.0.0
-    version: 1.0.0
+    specifier: ^1.0.1
+    version: 1.0.1
   jiti:
     specifier: ^1.21.6
     version: 1.21.6
@@ -2692,8 +2692,8 @@ packages:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
     dev: true
 
-  /groqfmt-nodejs@1.0.0:
-    resolution: {integrity: sha512-IuA0r7dSBKoPdZPOcg524od8SP/BibN018g/LVaPNhCX/1YAM1B/23HpEFMnM5Q9Tcd0TGV28W2dMnsOptymUA==}
+  /groqfmt-nodejs@1.0.1:
+    resolution: {integrity: sha512-pT3sxQoGJt66JSbfkq383YGlbaQS9+Jtfcw2pnlDu/cxYfRHlN12/mWdFKOLOVW9+41Lt1CBstO48HKkAjLbcw==}
     hasBin: true
     requiresBuild: true
     dependencies:

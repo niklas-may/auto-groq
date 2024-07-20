@@ -37,7 +37,7 @@
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "glob": "^11.0.0",
-    "groqfmt-nodejs": "^1.0.0",
+    "groqfmt-nodejs": "^1.0.1",
     "jiti": "^1.21.6",
     "lodash": "^4.17.21",
     "prettier": "^3.3.3"
