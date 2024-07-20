@@ -47,8 +47,8 @@ export class SchemaProjection implements FieldVisitorV2 {
 
       if (schemaExists) {
         const projection = this.context.schema.get(field.type).visitor[0]?.result ?? ("" as string);
-        const builder = isConditonal ? this.buildConditional : (left: string, right: string) => right
-        const  groq = builder(field.type, projection)
+        const builder = isConditonal ? this.buildConditional : (left: string, right: string) => right;
+        const groq = builder(field.type, projection);
         return (this.result = this.concat(args, groq));
       } else {
         consola.error("Schama not found");
