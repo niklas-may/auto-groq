@@ -33,8 +33,7 @@ export class File implements IFile {
 }
 
 export class FileService implements IContextModule {
-  store: Map<string, File> = new Map();
-
+  data: Map<string, File> = new Map();
   filesWriten = 0;
   touchedFiles = new Set<string>();
   intital = true;
@@ -43,9 +42,9 @@ export class FileService implements IContextModule {
 
   set(file: File): File {
     this.touchedFiles.add(file.fullName);
-    const currentFile = this.store.get(file.fullName);
+    const currentFile = this.data.get(file.fullName);
     if (currentFile) file.contentOnDisk = currentFile.contentOnDisk;
-    return this.store.set(file.fullName, file).get(file.fullName) as File;
+    return this.data.set(file.fullName, file).get(file.fullName) as File;
   }
 
   async isDirty(file: File) {
@@ -64,9 +63,15 @@ export class FileService implements IContextModule {
     return dirty;
   }
 
+  resolveFilePath(file: IFile) {
+    const extension = file.extension === "" ? this.context.options.defaultExtenstion : file.extension;
+    const name = `${kebabCase(file.name)}.${extension}`;
+    return path.resolve(path.join(this.context.options.output, file.directory, name));
+  }
+
   async flush() {
     this.filesWriten = 0;
-    await Promise.all([...this.store].map(([_, file]) => this.writeFile(file)));
+    await Promise.all([...this.data].map(([_, file]) => this.writeFile(file)));
 
     if (this.intital) {
       await this.initialCleanup();
@@ -76,47 +81,37 @@ export class FileService implements IContextModule {
     }
   }
 
-  resolveFilePath(file: IFile) {
-    const extension = file.extension === "" ? this.context.options.defaultExtenstion : file.extension;
-    const name = `${kebabCase(file.name)}.${extension}`;
-    return path.resolve(path.join(this.context.options.outPath, file.directory, name));
-  }
-
   private async initialCleanup() {
     const dirs: string[] = [];
     const files: string[] = [];
 
-    const currentFiles = await glob(`${path.resolve(this.context.options.outPath)}/**/*`, { stat: true, withFileTypes: true });
+    const currentFiles = await glob(`${path.resolve(this.context.options.output)}/**/*`, { stat: true, withFileTypes: true });
     for (const f of currentFiles) {
       f.isDirectory() ? dirs.push(f.fullpath()) : files.push(f.fullpath());
     }
 
-    const storeFilePaths = new Set(Array.from(this.store).map(([_, file]) => this.resolveFilePath(file)));
+    const dataFilePaths = new Set(Array.from(this.data).map(([_, file]) => this.resolveFilePath(file)));
     for (const filePath of files) {
-      if (!storeFilePaths.has(filePath)) {
+      if (!dataFilePaths.has(filePath)) {
         await promises.unlink(filePath);
       }
     }
 
     for (const d of dirs) {
-      const exists = [...this.store].some(([_, file]) => this.resolveFilePath(file).startsWith(d));
+      const exists = [...this.data].some(([_, file]) => this.resolveFilePath(file).startsWith(d));
       if (!exists) {
         await promises.rmdir(d);
       }
     }
   }
 
-  private cleanup() {
-    for (const [_, f] of this.store) {
+  private async cleanup() {
+    for (const [_, f] of this.data) {
       if (!this.touchedFiles.has(f.fullName)) {
-        this.deleteFile(f);
+        await promises.unlink(this.resolveFilePath(f));
       }
     }
     this.touchedFiles.clear();
-  }
-
-  private async deleteFile(file: File) {
-    return promises.unlink(this.resolveFilePath(file));
   }
 
   private async writeFile(file: File) {

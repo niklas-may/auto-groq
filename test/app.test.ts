@@ -25,14 +25,14 @@ describe("[App]", () => {
           }`,
         },
       },
-      { outPath: "./.autogroq/app" },
+      { output: "./.autogroq/app" },
     );
 
     const app = new App(config, options);
     await app.run();
 
     // @ts-ignore
-    const res = Array.from(app.context.file.store.values()).find((f) => f.name === "getSimpleById").content;
+    const res = Array.from(app.context.file.data.values()).find((f) => f.name === "getSimpleById").content;
     expect(res).toMatchInlineSnapshot(`
       "export const getSimpleByIdQuery = /* groq */ \`
       *[_id == $id] {
@@ -106,7 +106,7 @@ describe("[App]", () => {
           }`,
         },
       },
-      { outPath: "./.autogroq/app" },
+      { output: "./.autogroq/app" },
     );
 
     const app = new App(config, options);

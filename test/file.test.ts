@@ -12,12 +12,12 @@ describe("[FileService]", () => {
       resolvers: {},
       queries: {},
     },
-    { outPath: "./test/fixtures/.autogroq"},
+    { output: "./test/fixtures/.autogroq"},
   );
-  const { outPath } = ctx.options;
+  const { output } = ctx.options;
 
   afterEach(async () => {
-    rmSync(path.resolve(ctx.options.outPath), { recursive: true, force: true });
+    rmSync(path.resolve(ctx.options.output), { recursive: true, force: true });
   });
 
   it("should wirte file to disk", async () => {
@@ -65,14 +65,14 @@ describe("[FileService]", () => {
   it("should remove files that are not in the current store", async () => {
     const service = new FileService(ctx);
     
-    await promises.mkdir(outPath, { recursive: true });
-    await promises.mkdir(path.join(outPath, "externalFolder"), { recursive: true });
-    await promises.writeFile(path.join(outPath, "external.ts"), "// external", { encoding: "utf8" });
+    await promises.mkdir(output, { recursive: true });
+    await promises.mkdir(path.join(output, "externalFolder"), { recursive: true });
+    await promises.writeFile(path.join(output, "external.ts"), "// external", { encoding: "utf8" });
     
     const file = new File({ name: "file", directory: "test", content: "// Test file"});
     service.set(file)
     await service.flush();
-    const files = await glob(`${outPath}/**/*`);
+    const files = await glob(`${output}/**/*`);
     
     expect(files.length).toBe(2);
     expect(service.resolveFilePath(file).endsWith(files[1])).toBe(true);

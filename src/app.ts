@@ -1,5 +1,5 @@
 import { type Config, UserOptions } from "./lib/config";
-import { QueryTransformer, transformPartials } from "./lib/query";
+import { QueryTransformer, processQuery } from "./lib/query";
 import { createConsola } from "consola";
 import { Context } from "./lib/context";
 import { File } from "./lib/file";
@@ -7,8 +7,6 @@ import { File } from "./lib/file";
 export interface SchemaVisitorResult {
   projection: string;
 }
-
-export type QueryCallbackContext = (args: any) => any;
 
 export class App {
   private logger = createConsola({ formatOptions: { date: false } }).withTag("autogroq");
@@ -21,7 +19,7 @@ export class App {
   run = () =>
     this.collectStats(async () => {
       const queryContext: Record<string, SchemaVisitorResult> = {};
-      const queryTransformer: QueryTransformer[] = [transformPartials];
+      const queryTransformer: QueryTransformer[] = [processQuery];
 
       for (const [key] of Object.entries(this.context.config.schemas)) {
         const schema = this.context.schema.get(key);
@@ -41,8 +39,8 @@ export class App {
         const query = queryTransformer.reduce((query, handler) => handler(name, query, this.context), baseQuery);
 
         const file = new File({
-          name,
           directory: "queries",
+          name,
           content: query,
         });
         this.context.file.set(file);
@@ -60,7 +58,7 @@ export class App {
     await func();
 
     this.logger.info(
-      `Processed ${this.context.file.store.size} ${this.context.file.store.size > 1 ? "files" : "file"}, updated ${this.context.file.filesWriten}.`,
+      `Processed ${this.context.file.data.size} ${this.context.file.data.size > 1 ? "files" : "file"}, updated ${this.context.file.filesWriten}.`,
     );
 
     const et = performance.now();

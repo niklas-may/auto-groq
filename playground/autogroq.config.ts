@@ -27,5 +27,5 @@ export default createConfig(
         }`,
     },
   },
-  { outPath: "./playground/.autogroq" },
+  { output: "./playground/.autogroq" },
 );

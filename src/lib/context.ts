@@ -32,7 +32,7 @@ export class Context {
 
   setOptions(options?: UserOptions) {
     const defaults: Options = {
-      outPath: "./.autogroq",
+      output: "./.autogroq",
       inlineResolver: true,
       defaultExtenstion: "ts",
     };

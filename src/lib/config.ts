@@ -13,7 +13,7 @@ export type Config<T extends SchemaConfig = Record<string, any>> = {
 };
 
 export type UserOptions = {
-  outPath?: string;
+  output?: string;
   defaultExtenstion?: string;
   inlineResolver?: boolean;
 };
